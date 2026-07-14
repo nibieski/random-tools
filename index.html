@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>random tools</title>
+        <style>
+            body {
+                background-color: rgb(20, 20, 20);
+                font-family: sans-serif;
+                color: white;
+            }
+
+            .section {
+                background-color: rgb(41, 41, 41);
+                width: 250px;
+                height: 30px;
+                padding-top: 6px;
+                box-sizing: border-box;
+                border-radius: 24px;
+                corner-shape: squircle;
+                text-align: center;
+                align-content: flex-start;
+
+                overflow: hidden;
+                transition: height 0.3s ease-in-out;
+            }
+            .section:hover {
+                height: 500px;
+            }
+            .sectionButton {
+                background-color: rgb(58, 58, 58);
+                font-size: 20px;
+                color: white;
+                display: block;
+                height: 40px;
+                width: 200px;
+                margin: 15px auto 0;
+                border-radius: 24px;
+                border-style: none;
+                corner-shape: squircle;
+
+                position: relative; 
+                cursor: pointer;
+            }
+            .sectionButton:hover {
+                background-color: rgb(90, 90, 90);
+
+            }
+            
+            .section .sectionButton {
+                opacity: 0;
+
+                transition: opacity 0.3s ease-in-out, background-color 0.1s ease-in-out;
+            }
+            .section:hover .sectionButton {
+                opacity: 1;
+            }
+            .tooltip {
+                background-color: rgb(46, 46, 46);
+                color: white;
+                font-size: 14px;
+                border-radius: 8px;
+                width: 160px;
+                z-index: 5;
+                pointer-events: none;
+
+                position: absolute;
+                top: 100%;
+                left: 50%;
+                transform: translateX(-50%);
+
+                opacity: 0;
+                transition: opacity 0.2s ease-in-out;
+            }
+            .sectionButton:hover .tooltip {
+                opacity: 1;
+            }
+            .headingButton {
+                font-size: 32px;
+                font-weight: bold;
+                color: white;
+                background: transparent;
+                border: none;
+                padding: 0;
+            }
+        </style>
+    </head>
+    <body>
+        <button class="headingButton" onclick="window.location.href='Main.html'">random tools</button>
+        <p>made by nibieski</p>
+        <div class="section">Tools for Minecraft
+            <br>
+            <br>
+             <button class="sectionButton" id="bedrockCalculator" onclick="window.location.href='BedrockCracker.html';">
+                 Bedrock cracker
+                  <span class="tooltip">Gives out coordinates based on the bedrock pattern</span>
+             </button>
+             <br>
+             <button class="sectionButton" id="portalCalculator" onclick="window.location.href='PortalCalculator.html';">
+                 Portal calculator
+                 <span class="tooltip">Turns overworld coordinates into nether coordinates or the other way around</span>
+             </button>
+             <br>
+         </div>
+        <p>Not an official Minecraft product. Not approved by or associated with Mojang.</p>
+    </body>
+</html>

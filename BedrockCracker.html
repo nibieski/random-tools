@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>random tools</title>
+        <style>
+                body {
+                    background-color: rgb(20, 20, 20);
+                    font-family: sans-serif;
+                    color: white;
+                }
+                .darkButton {
+                    background-color: rgb(58, 58, 58);
+                    font-size: 20px;
+                    color: white;
+                    display: block;
+                    border-radius: 24px;
+                    border-style: none;
+                    corner-shape: squircle;
+                    transition: background-color 0.1s ease-in-out;
+                }
+                .darkButton:hover { 
+                background-color: rgb(90, 90, 90);
+                }
+                .headingButton {
+                    font-size: 32px;
+                    font-weight: bold;
+                    color: white;
+                    background: transparent;
+                    border: none;
+                    padding: 0;
+                }
+                .grid-container {
+                display: grid; 
+                grid-template-columns: repeat(5, 50px);
+                gap: 1px;
+                }
+                .grid-block {
+                    height: 50px;
+                    width: 50px;
+                    background-color: #6d6d6d;
+
+                }
+                .grid-block[data-state="0"] {
+                    background-color: #6d6d6d; 
+                }
+                .grid-block[data-state="1"] {
+                    background-color: #424242; 
+                }
+                .grid-block[data-state="2"] {
+                    background-color: #292929;
+                } 
+                </style>
+        </style>
+    </head>
+    <body>
+        <button class="headingButton" onclick="window.location.href='index.html'">random tools</button>
+        <p>Bedrock cracker</p>
+        <strong>input version and seed here</strong>
+        <br>
+        <br>
+        <input class="darkButton" style="height: 25px;"  placeholder="seed here", id="seed">
+        <br>
+        <input class="darkButton" style="height: 25px;" placeholder="radius (default 30000)", id="radius", type="number", min="1">
+        <br>
+        <select class="darkButton" style="height: 25px; width: 100px;" id="version-select">
+            <option value="post">1.18+</option>
+            <option value="pre">pre 1.18</option>
+        </select>
+        <br>
+        <div class="grid-container">
+            <div class="grid-block", data-state="0"></div>
+            <div class="grid-block", data-state="0"></div>
+            <div class="grid-block", data-state="0"></div>
+            <div class="grid-block", data-state="0"></div>
+            <div class="grid-block", data-state="0"></div>
+
+            <div class="grid-block", data-state="0"></div>
+            <div class="grid-block", data-state="0"></div>
+            <div class="grid-block", data-state="0"></div>
+            <div class="grid-block", data-state="0"></div>
+            <div class="grid-block", data-state="0"></div>
+
+            <div class="grid-block", data-state="0"></div>
+            <div class="grid-block", data-state="0"></div>
+            <div class="grid-block", data-state="0"></div>
+            <div class="grid-block", data-state="0"></div>
+            <div class="grid-block", data-state="0"></div>
+
+            <div class="grid-block", data-state="0"></div>
+            <div class="grid-block", data-state="0"></div>
+            <div class="grid-block", data-state="0"></div>
+            <div class="grid-block", data-state="0"></div>
+            <div class="grid-block", data-state="0"></div>
+
+            <div class="grid-block", data-state="0"></div>
+            <div class="grid-block", data-state="0"></div>
+            <div class="grid-block", data-state="0"></div>
+            <div class="grid-block", data-state="0"></div>
+            <div class="grid-block", data-state="0"></div>
+
+        </div>
+
+        <br>
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="width: 50px; height: 50px; background-color: #6d6d6d; display: inline-block;"></div>
+            <p>- unknown block</p>
+            <div style="width: 50px; height: 50px; background-color: #424242; display: inline-block;"></div>
+            <p>- deepslate or stone</p>
+            <div style="width: 50px; height: 50px; background-color: #292929; display: inline-block;"></div>
+            <p>- bedrock</p>
+        </div>
+        <br>
+        <button id="clear-grid", class="darkButton", style="height: 30px; width: fit-content;">clear grid</button>
+        <br>    
+        <button id="find-coords", class="darkButton", style="height: 30px; width: fit-content;">find coordinates</button>
+        <br>
+        <strong>possible coordinates will display here:</strong>
+        <br>
+        <ul id="coords-list"></ul>
+        <script>
+            const blocks = document.querySelectorAll('.grid-block');
+            blocks.forEach(block => {
+                block.addEventListener('click', () => {
+                    let currentState = block.dataset.state;
+                    if (currentState === "0") {
+                        block.dataset.state = "1";
+                    } else if (currentState === "1") {
+                        block.dataset.state = "2";
+                    } else if (currentState === "2") {
+                        block.dataset.state = "0";
+                    }
+                });
+            });
+            document.getElementById('clear-grid').addEventListener('click', () =>{
+                blocks.forEach(block => {
+                    block.dataset.state = "0";
+                });
+                document.getElementById('coords-list').innerHTML = "";
+            });
+
+            // ---- fast 64-bit (hi/lo uint32) integer helpers, no BigInt in the hot path ----
+            function xor64(a, b) { return { hi: (a.hi ^ b.hi) >>> 0, lo: (a.lo ^ b.lo) >>> 0 }; }
+            function add64(a, b) {
+                const lo = (a.lo + b.lo) % 4294967296;
+                const carry = lo < a.lo ? 1 : 0;
+                const hi = (a.hi + b.hi + carry) >>> 0;
+                return { hi, lo: lo >>> 0 };
+            }
+            function sub64(a, b) {
+                const nb = { hi: (~b.hi) >>> 0, lo: (~b.lo) >>> 0 };
+                return add64(add64(a, nb), { hi: 0, lo: 1 });
+            }
+            function rotl64(a, n) {
+                if (n === 0) return a;
+                if (n < 32) {
+                    return {
+                        hi: ((a.hi << n) | (a.lo >>> (32 - n))) >>> 0,
+                        lo: ((a.lo << n) | (a.hi >>> (32 - n))) >>> 0
+                    };
+                }
+                if (n === 32) return { hi: a.lo, lo: a.hi };
+                const m = n - 32;
+                return {
+                    hi: ((a.lo << m) | (a.hi >>> (32 - m))) >>> 0,
+                    lo: ((a.hi << m) | (a.lo >>> (32 - m))) >>> 0
+                };
+            }
+            function shl21(a) {
+                return { hi: ((a.hi << 21) | (a.lo >>> 11)) >>> 0, lo: (a.lo << 21) >>> 0 };
+            }
+            function shr40logical(a) { return (a.hi >>> 8) >>> 0; }
+            function ashr16(a) {
+                return {
+                    hi: ((a.hi | 0) >> 16) >>> 0,
+                    lo: ((a.lo >>> 16) | (a.hi << 16)) >>> 0
+                };
+            }
+            function shr64(a, n) {
+                if (n === 0) return a;
+                if (n < 32) return { hi: a.hi >>> n, lo: ((a.lo >>> n) | (a.hi << (32 - n))) >>> 0 };
+                if (n === 32) return { hi: 0, lo: a.hi };
+                return { hi: 0, lo: a.hi >>> (n - 32) };
+            }
+            function mul64(a, b) {
+                const a48 = a.hi >>> 16, a32 = a.hi & 0xFFFF, a16 = a.lo >>> 16, a00 = a.lo & 0xFFFF;
+                const b48 = b.hi >>> 16, b32 = b.hi & 0xFFFF, b16 = b.lo >>> 16, b00 = b.lo & 0xFFFF;
+                let c48 = 0, c32 = 0, c16 = 0, c00 = 0;
+                c00 += a00 * b00;
+                c16 += c00 >>> 16; c00 &= 0xFFFF;
+                c16 += a16 * b00;
+                c32 += c16 >>> 16; c16 &= 0xFFFF;
+                c16 += a00 * b16;
+                c32 += c16 >>> 16; c16 &= 0xFFFF;
+                c32 += a32 * b00;
+                c48 += c32 >>> 16; c32 &= 0xFFFF;
+                c32 += a16 * b16;
+                c48 += c32 >>> 16; c32 &= 0xFFFF;
+                c32 += a00 * b32;
+                c48 += c32 >>> 16; c32 &= 0xFFFF;
+                c48 += a48 * b00 + a32 * b16 + a16 * b32 + a00 * b48;
+                c48 &= 0xFFFF;
+                return { lo: ((c16 << 16) | c00) >>> 0, hi: ((c48 << 16) | c32) >>> 0 };
+            }
+            function numberToU64(n) {
+                if (n < 0) {
+                    const mag = -n;
+                    const hi = Math.floor(mag / 4294967296) >>> 0;
+                    const lo = (mag % 4294967296) >>> 0;
+                    const nhi = (~hi) >>> 0, nlo = (~lo) >>> 0;
+                    const lo2 = (nlo + 1) % 4294967296;
+                    const carry = lo2 < nlo ? 1 : 0;
+                    const hi2 = (nhi + carry) >>> 0;
+                    return { hi: hi2, lo: lo2 >>> 0 };
+                }
+                return { hi: Math.floor(n / 4294967296) >>> 0, lo: (n % 4294967296) >>> 0 };
+            }
+
+            const GOLDEN = { hi: 0x6A09E667, lo: 0xF3BCC909 };
+            const SUBTRAHEND = { hi: 0x61c88646, lo: 0x80b583eb };
+            const SM_C1 = { hi: 0xBF58476D, lo: 0x1CE4E5B9 };
+            const SM_C2 = { hi: 0x94D049BB, lo: 0x133111EB };
+            const SALT_LOW = { hi: 0xbbf7928b, lo: 0x7bf1d285 };
+            const SALT_HIGH = { hi: 0xc4dc7cf9, lo: 0x0e1b3b94 };
+            const C_3129871 = 3129871, C_116129781 = 116129781;
+            const C_42317861 = numberToU64(42317861), C_11 = numberToU64(11);
+
+            function splitmix64(seed) {
+                let s = xor64(seed, shr64(seed, 30));
+                s = mul64(s, SM_C1);
+                s = xor64(s, shr64(s, 27));
+                s = mul64(s, SM_C2);
+                s = xor64(s, shr64(s, 31));
+                return s;
+            }
+            function nextLong(state) {
+                const l = state.lo64, h = state.hi64;
+                const n = add64(rotl64(add64(l, h), 17), l);
+                const newH = xor64(h, l);
+                const newL = xor64(xor64(rotl64(l, 49), newH), shl21(newH));
+                state.lo64 = newL;
+                state.hi64 = rotl64(newH, 28);
+                return n;
+            }
+            function nextFloatFrom(state) {
+                const bits = shr40logical(nextLong(state));
+                return bits * 5.9604645e-8;
+            }
+            function createXoroshiroSeed(seed) {
+                const l = xor64(seed, GOLDEN);
+                const m = sub64(l, SUBTRAHEND);
+                return { lo64: splitmix64(l), hi64: splitmix64(m) };
+            }
+            function forkState(state) {
+                const lo = nextLong(state);
+                const hi = nextLong(state);
+                return { lo64: lo, hi64: hi };
+            }
+            function hashCode(x, yterm, z) {
+                const xterm32 = Math.imul(x, C_3129871);
+                const xterm = { hi: (xterm32 >> 31) >>> 0, lo: xterm32 >>> 0 };
+                const zterm = numberToU64(z * C_116129781);
+                let val = xor64(xor64(xterm, zterm), yterm);
+                const sq = mul64(val, val);
+                const t1 = mul64(sq, C_42317861);
+                const t2 = mul64(val, C_11);
+                val = add64(t1, t2);
+                return ashr16(val);
+            }
+            function makeBedrockFactory(seedHiLo) {
+                let s = createXoroshiroSeed(seedHiLo);
+                s = forkState(s);
+                s.lo64 = xor64(s.lo64, SALT_LOW);
+                s.hi64 = xor64(s.hi64, SALT_HIGH);
+                s = forkState(s);
+                return s;
+            }
+            function isBedrock(factory, x, yterm, z, density) {
+                const h = hashCode(x, yterm, z);
+                const local = { lo64: xor64(h, factory.lo64), hi64: factory.hi64 };
+                return nextFloatFrom(local) < density;
+            }
+            function lerpFromProgress(v, ls, le, s, e) {
+                const p = (v - ls) / (le - ls);
+                return s + p * (e - s);
+            }
+            function parseSeedToU64(str) {
+                let big = BigInt(str) & ((1n << 64n) - 1n);
+                return { hi: Number(big >> 32n) >>> 0, lo: Number(big & 0xFFFFFFFFn) >>> 0 };
+            }
+
+            function getBlockState(factory, x, yterm, z, density) {
+                return isBedrock(factory, x, yterm, z, density) ? "2" : "1";
+            }
+
+            let searchId = null;
+            document.getElementById('find-coords').addEventListener('click', () =>{
+                const button = document.getElementById('find-coords');
+                
+                if (searchId !== null) {
+                    cancelAnimationFrame(searchId);
+                    searchId = null;
+                    button.textContent = "find coordinates";
+                    return;
+                }
+
+                const seedInput = document.getElementById('seed').value;
+                const list = document.getElementById('coords-list');
+                
+                list.innerHTML = "";
+                if (!seedInput) return;
+                
+                let parsedSeed;
+                try {
+                    parsedSeed = parseSeedToU64(seedInput);
+                } catch(e) {
+                    return;
+                }
+
+                const pattern = Array.from(blocks).map(block => {
+                    return block.dataset.state || '0';
+                });
+
+                const radiusInput = parseInt(document.getElementById('radius').value, 10);
+                const radius = (Number.isFinite(radiusInput) && radiusInput > 0) ? radiusInput : 30000;
+
+                const y = -60;
+                const yterm = numberToU64(y);
+                const density = lerpFromProgress(y, -64, -59, 1.0, 0.0);
+                const factory = makeBedrockFactory(parsedSeed);
+
+                let currentX = -radius;
+                let totalChecked = 0;
+                let totalToLines = (radius * 2 + 1);
+                let totalBlocksToSearch = totalToLines * totalToLines;
+
+                button.textContent = "stop";
+
+                function searchChunk() {
+                    if (currentX > radius) {
+                        button.textContent = "find coordinates";
+                        searchId = null;
+                        return;
+                    }
+
+                    for (let z = -radius; z <= radius; z++) {
+                        let match = true;
+                        
+                        for (let row = 0; row < 5; row++) {
+                            for (let col = 0; col < 5; col++) {
+                                let index = row * 5 + col;
+                                let expectedState = pattern[index];
+                                
+                                if (expectedState === "0") continue;
+                                
+                                let actualState = getBlockState(factory, currentX + col, yterm, z + row, density);
+                                if (actualState !== expectedState) {
+                                    match = false;
+                                    break;
+                                }
+                            }
+                            if (!match) break;
+                        }
+                        if (match) {
+                            let item = document.createElement('li');
+                            item.textContent = "x: " + currentX + ", z: " + z;
+                            list.appendChild(item);
+                        }
+                        totalChecked++;
+                    }
+                    button.textContent = "stop (" + totalChecked + " / " + totalBlocksToSearch + ")";
+                    currentX++;
+                    searchId = requestAnimationFrame(searchChunk);
+                }
+                searchId = requestAnimationFrame(searchChunk);
+            });
+        </script>
+    </body>
+</html>
