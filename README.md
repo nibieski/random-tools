@@ -8,3 +8,6 @@ More tools will be added over time.
 Minecraft is a trademark of Mojang AB.
 
 This project is an unofficial fan project and is not affiliated with or endorsed by Mojang.
+
+## Live website
+https://nibieski.github.io/random-tools/
