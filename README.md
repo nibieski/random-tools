@@ -11,3 +11,5 @@ This project is an unofficial fan project and is not affiliated with or endorsed
 
 ## Live website
 https://nibieski.github.io/random-tools/
+![Views](https://shields.io)
+
