@@ -12,4 +12,4 @@ This project is an unofficial fan project and is not affiliated with or endorsed
 ## Live website
 https://nibieski.github.io/random-tools/
 
-[![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fnibieski.github.io%2Frandom-tools%2F&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
+![Profile Views](https://komarev.com/ghpvc/?username=nibieski&repo=random-tools&color=blue)
