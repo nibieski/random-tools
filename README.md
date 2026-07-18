@@ -12,4 +12,4 @@ This project is an unofficial fan project and is not affiliated with or endorsed
 ## Live website
 https://nibieski.github.io/random-tools/
 
-![Profile Views](https://komarev.com/ghpvc/?username=nibieski&repo=random-tools&color=blue)
+![This repo views](https://komarev.com/ghpvc/?username=nibieski&repo=random-tools&color=blue)
